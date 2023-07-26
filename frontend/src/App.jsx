@@ -9,14 +9,15 @@ import DayQuery from './pages/DayQuery/DayQuery';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename='/epa'>
       <Routes>
         <Route path='/' element={<SharedLayout />}>
           <Route index element={<Home />} />
 
-          <Route path='/location' element={<Location />} />
+          <Route path='location' element={<Location />} />
 
           <Route path='7-day-query' element={<DayQuery />} />
+          
         </Route>
       </Routes>
     </BrowserRouter>

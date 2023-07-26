@@ -3,9 +3,17 @@ const { pool, client } = require('./config.js');
 const { chartHTML, getLoc, getdata } = require('./7-day-query.js');
 const app = express();
 const http = require('http');
+var https = require('https');
+var fs = require('fs');
+var credentials = {
+  key: fs.readFileSync('/opt/SSL-CT/private.key'),
+  ca: fs.readFileSync('/opt/SSL-CT/ca_bundle.crt'),
+  cert: fs.readFileSync('/opt/SSL-CT/certificate.crt')
+};
 const socketIo = require('socket.io');
 const cors = require('cors');
 const server = http.createServer(app);
+const httpsServer = https.createServer(credentials, app);
 const moment = require('moment');
 
 app.use(cors());
@@ -36,7 +44,7 @@ let formatData;
 
 client.connect();
 
-client.query('LISTEN record_changes');
+// client.query('LISTEN record_changes');
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -73,41 +81,41 @@ async function parseData(queryString) {
 }
 
 // socket connect
-io.on('connection', () => {
-  console.log('A client connected');
+// io.on('connection', () => {
+//   console.log('A client connected');
 
-  // send message to ALL client
-  io.emit('message', 'A new client connected');
-});
+//   // send message to ALL client
+//   io.emit('message', 'A new client connected');
+// });
 
 // when access the record insert or update
-client.on('notification', (msg) => {
-  console.log(`Received notification: ${msg.payload}`);
+// client.on('notification', (msg) => {
+//   console.log(`Received notification: ${msg.payload}`);
 
-  const objPayload = JSON.parse(msg.payload);
+//   const objPayload = JSON.parse(msg.payload);
 
-  const newPayload = {
-    ...objPayload,
-    value:
-      objPayload.Desc == 'TVOC' ? objPayload.value * 1000 : objPayload.value,
-    unit: objPayload.Desc == 'TVOC' ? 'ppb' : objPayload.unit,
-    timestamp: new Date(objPayload.timestamp).toLocaleString('zh-TW', {
-      timeZone: 'Asia/Taipei',
-      hourCycle: 'h23',
-    }),
-  };
+//   const newPayload = {
+//     ...objPayload,
+//     value:
+//       objPayload.Desc == 'TVOC' ? objPayload.value * 1000 : objPayload.value,
+//     unit: objPayload.Desc == 'TVOC' ? 'ppb' : objPayload.unit,
+//     timestamp: new Date(objPayload.timestamp).toLocaleString('zh-TW', {
+//       timeZone: 'Asia/Taipei',
+//       hourCycle: 'h23',
+//     }),
+//   };
 
-  // update local data
-  const tempData = formatData;
-  if (tempData != null) formatData = [newPayload, ...tempData];
-  console.log(newPayload);
+//   // update local data
+//   const tempData = formatData;
+//   if (tempData != null) formatData = [newPayload, ...tempData];
+//   console.log(newPayload);
 
-  io.emit('db-notify', newPayload);
-});
+//   io.emit('db-notify', newPayload);
+// });
 
-io.on('disconnect', () => {
-  console.log('A client disconnected');
-});
+// io.on('disconnect', () => {
+//   console.log('A client disconnected');
+// });
 
 app.get('/record/all', async (req, res) => {
   try {
@@ -400,7 +408,7 @@ app.get('/charts', function (req, resp) {
 
       let select =
         date_script +
-        '<form id="form1" action="http://chiu.hopto.org:8963/charts" method="get">\n';
+        '<form id="form1" action="https://em2lab.comm.yzu.edu.tw:8963/charts" method="get">\n';
       select +=
         '請選擇感測器: <select name="sensor_select" id="sensor_select">\n';
 
@@ -473,7 +481,7 @@ app.get('/liff/:dd/:devid/:hh', function (req, resp) {
   });
 });
 
-app.listen(8963, () => {
+httpsServer.listen(8963, () => {
   console.log('Server listening at port 8963 !!');
 });
 

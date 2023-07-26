@@ -54,7 +54,7 @@ const fetchRecordsInTimeInterval = async (
   });
   try {
     const response = await fetch(
-      `http://chiu.hopto.org:8963/record?startTime=${startTime}&subtype=${subtype}`
+      `https://em2lab.comm.yzu.edu.tw:8963/record?startTime=${startTime}&subtype=${subtype}`
     );
 
     const data = await response.json();
@@ -72,7 +72,7 @@ const fetchTempRecordsInTimeInterval = async (timeInterval = 8, sensorType) => {
   });
   try {
     const response = await fetch(
-      `http://chiu.hopto.org:8963/record?startTime=${startTime}&subtype=Temperature&sensorType=${sensorType}`
+      `https://em2lab.comm.yzu.edu.tw:8963/record?startTime=${startTime}&subtype=Temperature&sensorType=${sensorType}`
     );
 
     const data = await response.json();
@@ -95,7 +95,7 @@ const fetchRecordsMovingAverage = async (
   });
   try {
     const response = await fetch(
-      `http://chiu.hopto.org:8963/record/ma?startTime=${startTime}&numberOfSamples=${numberOfSamples}&subtype=${subtype}`
+      `https://em2lab.comm.yzu.edu.tw:8963/record/ma?startTime=${startTime}&numberOfSamples=${numberOfSamples}&subtype=${subtype}`
     );
 
     const data = await response.json();

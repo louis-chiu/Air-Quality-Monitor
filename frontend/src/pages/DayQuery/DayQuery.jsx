@@ -8,7 +8,7 @@ const DayQuery = () => {
         width: '100%',
         height: '90vh',
       }}
-      src='http://chiu.hopto.org:8963/charts'
+      src='https://em2lab.comm.yzu.edu.tw:8963/charts'
     ></iframe>
   );
 };
