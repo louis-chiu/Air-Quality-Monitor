@@ -26,7 +26,7 @@ import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 
-import { order, colorLineList, colorList } from '../../data';
+import { options, order, colorLineList, colorList } from '../../data';
 
 ChartJS.register(
   PointElement,
@@ -121,45 +121,6 @@ const Home = () => {
 
   const [timeIntervalUnitTVOC, setTimeIntervalUnitTVOC] = useState(1);
   const [timeIntervalUnitPM25, setTimeIntervalUnitPM25] = useState(1);
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-      },
-      subtitle: {
-        display: true,
-      },
-    },
-    scales: {
-      x: {
-        type: 'time',
-        max: moment(Date.now()),
-        time: {
-          displayFormats: {
-            minute: 'HH:mm',
-            hour: 'MMM D, HH:mm',
-          },
-        },
-      },
-      y: {
-        type: 'linear',
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        grid: {
-          drawOnChartArea: false,
-        },
-      },
-    },
-  };
 
   useEffect(() => {
     fetchRecordsInTimeInterval(timeIntervalTVOC, 'TVOC')
@@ -262,7 +223,10 @@ const Home = () => {
     <section className='home'>
       <div className='chart-header'>
         <h3>TVOC Data</h3>
-        <form onSubmit={handleSubmitMA} className='ma-form'>
+        <form
+          onSubmit={handleSubmitMA}
+          className='ma-form'
+        >
           <TextField
             id='outlined-number'
             type='number'
@@ -276,7 +240,11 @@ const Home = () => {
               inputProps: { min: 1 },
             }}
           />
-          <Button type='submit' variant='contained' className='submit'>
+          <Button
+            type='submit'
+            variant='contained'
+            className='submit'
+          >
             apply
           </Button>
         </form>
@@ -298,7 +266,10 @@ const Home = () => {
             <ToggleButton value={72}>3 d</ToggleButton>
             <ToggleButton value={168}>1 w</ToggleButton>
           </ToggleButtonGroup>
-          <form onSubmit={handleSubmit} className='form'>
+          <form
+            onSubmit={handleSubmit}
+            className='form'
+          >
             <TextField
               id='outlined-number'
               type='number'
@@ -323,7 +294,11 @@ const Home = () => {
               <MenuItem value={24 * 7}>Weeks</MenuItem>
               <MenuItem value={4 * 24 * 7}>Months</MenuItem>
             </Select>
-            <Button type='submit' variant='contained' className='submit'>
+            <Button
+              type='submit'
+              variant='contained'
+              className='submit'
+            >
               apply
             </Button>
           </form>
@@ -332,28 +307,28 @@ const Home = () => {
 
       <section className='chart-group'>
         {order.map((locDesc, index) => {
-          const newOptions = JSON.parse(JSON.stringify(options));
+          const copyOptions = JSON.parse(JSON.stringify(options));
 
-          newOptions.plugins.title.text = locDesc;
+          copyOptions.plugins.title.text = locDesc;
 
-          newOptions.plugins.subtitle.text = `${
+          copyOptions.plugins.subtitle.text = `${
             timeIntervalTVOCData.find((row) => row.locDesc == locDesc)?.mac
           }  ( ${
             timeIntervalTVOCData.find((row) => row.locDesc == locDesc)?.voltage
           }V )`;
 
-          newOptions.scales.x.min = moment(
+          copyOptions.scales.x.min = moment(
             Date.now() - timeIntervalTVOC * 60 * 60 * 1000
           );
 
-          newOptions.scales.y1.max = Math.round(
+          copyOptions.scales.y1.max = Math.round(
             timeIntervalTempTVOCData.reduce((max, row) => {
               const value = row.value;
               return value > max ? value : max;
             }, -Infinity) * 1.1
           );
 
-          newOptions.scales.y.max = Math.round(
+          copyOptions.scales.y.max = Math.round(
             timeIntervalTVOCData.reduce((max, row) => {
               const value = row.value;
               return value > max ? value : max;
@@ -361,10 +336,13 @@ const Home = () => {
           );
 
           return (
-            <div className='bar-chart' key={locDesc}>
+            <div
+              className='bar-chart'
+              key={locDesc}
+            >
               <Chart
                 type='bar'
-                options={newOptions}
+                options={copyOptions}
                 data={{
                   datasets: [
                     {
@@ -420,7 +398,10 @@ const Home = () => {
 
       <div className='chart-header'>
         <h3>PM2.5 Data</h3>
-        <form onSubmit={handleSubmitMA} className='ma-form'>
+        <form
+          onSubmit={handleSubmitMA}
+          className='ma-form'
+        >
           <TextField
             id='outlined-number'
             type='number'
@@ -434,7 +415,11 @@ const Home = () => {
               inputProps: { min: 1 },
             }}
           />
-          <Button type='submit' variant='contained' className='submit'>
+          <Button
+            type='submit'
+            variant='contained'
+            className='submit'
+          >
             apply
           </Button>
         </form>
@@ -447,29 +432,53 @@ const Home = () => {
             aria-label='Platform'
             className='button-group'
           >
-            <ToggleButton sx={{ minWidth: '50px' }} value={1}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={1}
+            >
               1 h
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={4}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={4}
+            >
               4 h
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={8}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={8}
+            >
               8 h
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={12}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={12}
+            >
               12 h
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={24}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={24}
+            >
               1 d
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={72}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={72}
+            >
               3 d
             </ToggleButton>
-            <ToggleButton sx={{ minWidth: '50px' }} value={168}>
+            <ToggleButton
+              sx={{ minWidth: '50px' }}
+              value={168}
+            >
               1 w
             </ToggleButton>
           </ToggleButtonGroup>
-          <form onSubmit={handleSubmit} className='form'>
+          <form
+            onSubmit={handleSubmit}
+            className='form'
+          >
             <TextField
               id='outlined-number'
               type='number'
@@ -494,7 +503,11 @@ const Home = () => {
               <MenuItem value={24 * 7}>Weeks</MenuItem>
               <MenuItem value={4 * 24 * 7}>Months</MenuItem>
             </Select>
-            <Button type='submit' variant='contained' className='submit'>
+            <Button
+              type='submit'
+              variant='contained'
+              className='submit'
+            >
               apply
             </Button>
           </form>
@@ -502,37 +515,40 @@ const Home = () => {
       </div>
       <section className='chart-group'>
         {order.map((locDesc, index) => {
-          const newOptions = JSON.parse(JSON.stringify(options));
+          const copyOptions = JSON.parse(JSON.stringify(options));
 
-          newOptions.plugins.title.text = locDesc;
+          copyOptions.plugins.title.text = locDesc;
 
-          newOptions.plugins.subtitle.text = `${
+          copyOptions.plugins.subtitle.text = `${
             timeIntervalPM25Data.find((row) => row.locDesc == locDesc)?.mac
           }  ( ${
             timeIntervalPM25Data.find((row) => row.locDesc == locDesc)?.voltage
           }V )`;
 
-          newOptions.scales.y.max = Math.round(
+          copyOptions.scales.y.max = Math.round(
             timeIntervalPM25Data.reduce((max, row) => {
               const value = row.value;
               return Number(value) > max ? value : max;
             }, -Infinity) * 1.1
           );
 
-          newOptions.scales.y1.max = Math.round(
+          copyOptions.scales.y1.max = Math.round(
             timeIntervalTempPM25Data.reduce((max, row) => {
               const value = row.value;
               return value > max ? value : max;
             }, -Infinity) * 1.1
           );
-          newOptions.scales.x.min = moment(
+          copyOptions.scales.x.min = moment(
             Date.now() - timeIntervalPM25 * 60 * 60 * 1000
           );
           return (
-            <div className='bar-chart' key={locDesc}>
+            <div
+              className='bar-chart'
+              key={locDesc}
+            >
               <Chart
                 type='bar'
-                options={newOptions}
+                options={copyOptions}
                 data={{
                   datasets: [
                     {
