@@ -3,17 +3,17 @@ const { pool, client } = require('./config.js');
 const { chartHTML, getLoc, getdata } = require('./7-day-query.js');
 const app = express();
 const http = require('http');
-var https = require('https');
-var fs = require('fs');
-var credentials = {
-  key: fs.readFileSync('/opt/SSL-CT/private.key'),
-  ca: fs.readFileSync('/opt/SSL-CT/ca_bundle.crt'),
-  cert: fs.readFileSync('/opt/SSL-CT/certificate.crt')
-};
+const https = require('https');
+const fs = require('fs');
+// const credentials = {
+//   key: fs.readFileSync('/opt/SSL-CT/private.key'),
+//   ca: fs.readFileSync('/opt/SSL-CT/ca_bundle.crt'),
+//   cert: fs.readFileSync('/opt/SSL-CT/certificate.crt')
+// };
 const socketIo = require('socket.io');
 const cors = require('cors');
 const server = http.createServer(app);
-const httpsServer = https.createServer(credentials, app);
+// const httpsServer = https.createServer(credentials, app);
 const moment = require('moment');
 
 app.use(cors());
@@ -169,8 +169,9 @@ app.get('/record/ma', async (req, res) => {
     const endTime = req.query.endTime || Math.floor(Date.now() / 1000);
     const numberOfSamples = req.query.numberOfSamples || 5;
     const subtype = req.query.subtype;
+    const locDesc = req.query.locDesc || '';
     // id, lastDate, timeRangeOfChart, numberOfCharts, cb
-    console.log(endTime);
+
     const maData = await parseData(
       `SELECT
       mac,
@@ -243,8 +244,12 @@ app.get('/record/ma', async (req, res) => {
                     SELECT
                       generate_series (
                         '${startTime}',
-                        to_timestamp(${endTime})::timestamp without time zone,
-                        interval '${subtype == 'TVOC' ? 5 : 20} min'
+                        ${
+                          typeof endTime === 'string'
+                            ? `'${endTime}'`
+                            : `to_timestamp(${endTime}):: timestamp without time zone`
+                        }
+                        ,interval '${subtype == 'TVOC' ? 5 : 20} min'
                       ) AS start_interval
                   ) grid
                   CROSS JOIN (
@@ -266,6 +271,7 @@ app.get('/record/ma', async (req, res) => {
               INNER JOIN locations l ON l.locid = re.locid
           ) subquery
       ) subquery2
+    ${locDesc && `WHERE "locDesc" = ${locDesc}`}
     ORDER BY
       sensorid,
       start_interval`
@@ -276,10 +282,53 @@ app.get('/record/ma', async (req, res) => {
     res.status(500).send('Interval Server Error');
   }
 });
+
+app.get('/record/max', async (req, res) => {
+  try {
+    const startTime = req.query.startTime;
+    const endTime = req.query.endTime || Math.floor(Date.now() / 1000);
+    const subtype = req.query.subtype || 'TVOC';
+    const sensorType = req.query.sensorType || '';
+    /* 將 JS timestamp 轉為 PostgreSQL timestamp without time zone*/
+
+    formatData = await parseData(
+      `
+          SELECT 
+          MAX( 
+           CASE
+            WHEN Subtype."Desc" = 'TVOC' THEN value * 1000
+                    ELSE value
+            END
+            )*1.1 as max_value
+          FROM RegistedSnrs
+          INNER JOIN Subtype ON RegistedSnrs.stypeid = Subtype.stypeid
+          INNER JOIN Records ON RegistedSnrs.sensorid = Records.sensorid
+          INNER JOIN locations ON RegistedSnrs.locid = locations.locid
+          WHERE Records."timestamp" >= '${startTime}'
+          AND Records."timestamp" <= ${
+            typeof endTime === 'string'
+              ? `${endTime}`
+              : `to_timestamp(${endTime}):: timestamp without time zone`
+          }
+          AND Subtype."Desc" = '${subtype}'
+          ${
+            sensorType &&
+            `AND RegistedSnrs.sensorid <= ${sensorType == 'TVOC' ? 75 : 99}
+          AND RegistedSnrs.sensorid >= ${sensorType == 'TVOC' ? 52 : 76}`
+          }`
+    );
+
+    res.json(formatData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Interval Server Error');
+  }
+});
+
 app.get('/record', async (req, res) => {
   try {
     const startTime = req.query.startTime;
-    const endTime = Math.floor(Date.now() / 1000);
+    const endTime = req.query.endTime || Math.floor(Date.now() / 1000);
     const subtype = req.query.subtype || 'TVOC';
     const sensorType = req.query.sensorType || '';
     /* 將 JS timestamp 轉為 PostgreSQL timestamp without time zone*/
@@ -291,7 +340,11 @@ app.get('/record', async (req, res) => {
           INNER JOIN Records ON RegistedSnrs.sensorid = Records.sensorid
           INNER JOIN locations ON RegistedSnrs.locid = locations.locid
           WHERE Records."timestamp" >= '${startTime}'
-          AND Records."timestamp" <= to_timestamp(${endTime})::timestamp without time zone
+          AND Records."timestamp" <= ${
+            typeof endTime === 'string'
+              ? `${endTime}`
+              : `to_timestamp(${endTime}):: timestamp without time zone`
+          }
           AND Subtype."Desc" = '${subtype}'
           ${
             sensorType &&
@@ -481,7 +534,7 @@ app.get('/liff/:dd/:devid/:hh', function (req, resp) {
   });
 });
 
-httpsServer.listen(8963, () => {
+app.listen(8963, () => {
   console.log('Server listening at port 8963 !!');
 });
 
