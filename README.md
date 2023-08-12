@@ -4,8 +4,7 @@
 
 ### Live Demo 
 ###### _目前運行中的版本為因應計畫需求修改後的版本，主要實作功能為 Day Query 頁面，其餘頁面因應計畫主持人之架構需求改為較為簡易的後端渲染 HTML Template_
-https://em2lab.comm.yzu.edu.tw/epa
-
+https://em2lab.comm.yzu.edu.tw/Projects/epa/
 
 ## 功能
 
